@@ -1,4 +1,17 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, status
+
+from pydantic import BaseModel, Field
+
+class DocumentCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    description: str | None = None
+    category: str | None = None
+
+class DocumentResponse(BaseModel):
+    id: int
+    title: str
+    description: str | None = None
+
 
 app = FastAPI()
 
@@ -27,4 +40,15 @@ async def get_user_document(
     return {
         "user_id": user_id,
         "document_id": document_id
+    }
+
+@app.post("/documents", 
+          response_model=DocumentResponse,
+          status_code=status.HTTP_201_CREATED
+          )
+async def create_document(document: DocumentCreate):
+    return {
+        "id": 1,
+        "title": document.title,
+        "description": document.description
     }
