@@ -1,17 +1,6 @@
 from fastapi import FastAPI, Query, status
 
-from pydantic import BaseModel, Field
-
-class DocumentCreate(BaseModel):
-    title: str = Field(min_length=1, max_length=200)
-    description: str | None = None
-    category: str | None = None
-
-class DocumentResponse(BaseModel):
-    id: int
-    title: str
-    description: str | None = None
-
+from schemas import DocumentCreate, DocumentResponse
 
 app = FastAPI()
 
@@ -50,5 +39,6 @@ async def create_document(document: DocumentCreate):
     return {
         "id": 1,
         "title": document.title,
-        "description": document.description
+        "description": document.description,
+        "category": document.category
     }
