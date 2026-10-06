@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field,HttpUrl
+from pydantic import BaseModel, ConfigDict, Field,HttpUrl
 from enum import Enum
 
 class DocumentCategory(str, Enum):
@@ -29,3 +29,6 @@ class DocumentCreate(DocumentBase):
 
 class DocumentResponse(DocumentBase):
     id: int
+
+    model_config = ConfigDict(from_attributes=True)
+    

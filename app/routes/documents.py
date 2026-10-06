@@ -4,6 +4,8 @@ from schemas import DocumentCreate, DocumentResponse
 
 from sqlalchemy.orm import Session
 
+from models import Document
+
 from database import get_db
 
 router = APIRouter(
@@ -38,13 +40,24 @@ async def get_document(
           response_model=DocumentResponse,
           status_code=status.HTTP_201_CREATED
           )
-async def create_document(
+def create_document(
     document: DocumentCreate,
-    db: Session = Depends(get_db)):
-    
-    return {
-        "id": 1,
-        "title": document.title,
-        "description": document.description,
-        "category": document.category
-    }
+    db: Session = Depends(get_db)):  
+
+    db_document = Document(
+        title=document.title,
+        description=document.description,
+        category=document.category,
+        priority=document.priority
+    )  
+    try:
+        db.add(db_document)
+        db.commit()
+        db.refresh(db_document)
+
+    except:
+        db.rollback()
+        raise
+
+
+    return db_document
