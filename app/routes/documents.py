@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Query, status, Depends
+from fastapi import APIRouter, Query, status, Depends, HTTPException
 
 from schemas import DocumentCreate, DocumentResponse
+
+from sqlalchemy import select
 
 from sqlalchemy.orm import Session
 
@@ -14,18 +16,35 @@ router = APIRouter(
 )
 
 
-@router.get("")
-async def list_documents(
-    search: str | None = None,
-    skip: int=0,
-    limit: int = Query(default=10, le=100)
-):
+@router.get("",
+            response_model=list[DocumentResponse],
+            status_code=status.HTTP_200_OK)
 
-    return {
-        "search": search,
-        "skip": skip,
-        "limit": limit
-    }
+def list_documents(
+    search: str | None = None,
+    skip: int= Query(default=0, ge=0),
+    limit: int = Query(default=10, le=100),
+    db:Session = Depends(get_db)
+   
+):
+    statement = select(Document)
+
+    if search:
+        statement = statement.where(
+            Document.title.ilike(f"%{search}%")
+        )
+
+    statement = (
+        statement
+        .order_by(Document.id)
+        .offset(skip)
+        .limit(limit)
+    )
+    
+    documents = db.scalars(statement).all()
+
+    return documents
+
 
 @router.get("/{document_id}")
 async def get_document(
@@ -61,3 +80,4 @@ def create_document(
 
 
     return db_document
+    
